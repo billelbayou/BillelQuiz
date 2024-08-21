@@ -2,7 +2,7 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import CategorySelect from "./components/CategorySelect";
-import QuestionRoute from "./components/QuestionRoute";
+import QuestionsPage from "./components/QuestionsPage";
 
 export default function App() {
   return (
@@ -10,7 +10,7 @@ export default function App() {
       <Router>
         <Routes>
           <Route path="/" element={<CategorySelect />} />
-          <Route path="/questions/:id" element={<QuestionRoute />} />
+          <Route path="/questions/:id" element={<QuestionsPage />} />
         </Routes>
       </Router>
     </React.StrictMode>
