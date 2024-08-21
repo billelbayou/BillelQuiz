@@ -21,34 +21,22 @@ export default function QuestionsPage() {
 
   useEffect(() => {
     const fetchQuestions = async () => {
-      if (!id) {
-        setLoading(false);
-        return;
-      }
-
       try {
         const response = await fetch(
           `https://opentdb.com/api.php?amount=1&category=${id}`
         );
         const data = await response.json();
-
-        // Check if we have valid question data
-        if (data.results && data.results.length > 0) {
-          setQuestionData(data.results[0]);
-        } else {
-          setFeedback("No question found.");
-          setFeedbackType("undefined");
-        }
+        setQuestionData(data.results[0]);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching the questions:", error);
-        setFeedback("Error fetching the questions.");
-        setFeedbackType("undefined");
-      } finally {
         setLoading(false);
       }
     };
 
-    fetchQuestions();
+    if (id) {
+      fetchQuestions();
+    }
   }, [id]);
 
   useEffect(() => {
@@ -97,31 +85,21 @@ export default function QuestionsPage() {
   };
 
   const handlePlayAgain = () => {
-    // Reset the state
     setSelectedAnswer(null);
     setFeedback(null);
     setIsSubmitted(false);
-    setQuestionData(null);  // Clear the current question data
-    setLoading(true);  // Set loading to true
-
-    // Fetch a new question
+    setLoading(true);
     if (id) {
+      // Fetch a new question
       fetch(`https://opentdb.com/api.php?amount=1&category=${id}`)
         .then((response) => response.json())
         .then((data) => {
-          if (data.results && data.results.length > 0) {
-            setQuestionData(data.results[0]);  // Set the new question data
-          } else {
-            setFeedback("No question found.");
-            setFeedbackType("undefined");
-          }
-          setLoading(false);  // Loading is complete
+          setQuestionData(data.results[0]);
+          setLoading(false);
         })
         .catch((error) => {
           console.error("Error fetching the questions:", error);
-          setFeedback("Error fetching the questions.");
-          setFeedbackType("undefined");
-          setLoading(false);  // Loading is complete even if there's an error
+          setLoading(false);
         });
     }
   };
@@ -137,7 +115,7 @@ export default function QuestionsPage() {
   if (!questionData) {
     return (
       <div className="bg-[#EFF0F3] w-full h-screen flex justify-center items-center">
-        <p className="text-4xl font-bold">{feedback}</p>
+        <p className="text-4xl font-bold">No question found.</p>
       </div>
     );
   }
@@ -145,10 +123,7 @@ export default function QuestionsPage() {
   return (
     <React.StrictMode>
       <section className="w-full h-screen bg-[#EFF0F3] flex flex-col items-center justify-center py-24">
-        <button
-          onClick={() => navigate("/")}
-          className="relative mb-5 text-gray-600 left-[-192px] translate-x-[50%]"
-        >
+        <button onClick={() => navigate("/")} className="relative mb-5 text-gray-600 left-[-192px] translate-x-[50%]">
           <FontAwesomeIcon icon={faHouse} size="xl" />
         </button>
         <div className="mb-10 h-fit w-96 bg-white text-xl font-bold flex items-center justify-center p-10 rounded-xl leading-8 shadow-xl">
@@ -158,7 +133,15 @@ export default function QuestionsPage() {
           {answersArr.map((item, index: number) => (
             <div
               key={index}
-              className="w-96 h-10 mb-2 bg-white text-lg font-semibold rounded-lg overflow-hidden"
+              className={`w-96 h-10 mb-2 text-lg font-semibold rounded-lg overflow-hidden ${
+                isSubmitted
+                  ? item.correct
+                    ? "bg-green-500"
+                    : selectedAnswer === item.value
+                    ? "bg-red-500"
+                    : "bg-white"
+                  : "bg-white"
+              }`}
             >
               <input
                 type="radio"
@@ -171,15 +154,7 @@ export default function QuestionsPage() {
               />
               <label
                 htmlFor={`${index}`}
-                className={`w-full h-full flex items-center justify-center cursor-pointer ${
-                  isSubmitted
-                    ? item.correct
-                      ? "bg-green-500"
-                      : selectedAnswer === decode(item.value)
-                      ? "bg-red-500"
-                      : ""
-                    : ""
-                }`}
+                className="w-full h-full flex items-center justify-center cursor-pointer"
               >
                 {decode(item.value)}
               </label>
